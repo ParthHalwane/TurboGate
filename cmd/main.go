@@ -3,28 +3,56 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"TurboGate/config"
-	"TurboGate/internal/limiter"
 	"TurboGate/internal/router"
+	"TurboGate/internal/watcher"
 )
 
 func main() {
-	// Load routing config from YAML
-	cfg, err := config.LoadConfig("config/config.yaml")
+	cfgPath := "config/config.yaml"
+	routes, err := config.LoadConfig(cfgPath)
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Create per-IP rate limiter: 100 req/min
-	lim := limiter.NewIPRateLimiter(100, 60)
+	rateLimiter := router.NewRateLimiterMiddleware(10, 20) // Customize as needed
+	initialRouter := router.SetupRouter(routes, rateLimiter)
+	manager := router.NewRouterManager(initialRouter)
 
-	// Create router with config and rate limiter
-	mux := router.NewRouter(cfg, lim)
+	go func() {
+		err := watcher.WatchConfig(cfgPath, func() {
+			newRoutes, err := config.LoadConfig(cfgPath)
+			if err != nil {
+				log.Printf("Error reloading config: %v", err)
+				return
+			}
+			log.Println("✅ Reloaded routes")
+			newRouter := router.SetupRouter(newRoutes, rateLimiter)
+			manager.UpdateHandler(newRouter)
+		})
+		if err != nil {
+			log.Fatalf("Watcher failed: %v", err)
+		}
+	}()
 
-	log.Println("TurboGate listening on :8080")
-	err = http.ListenAndServe(":8080", mux)
-	if err != nil {
-		log.Fatalf("server error: %v", err)
+	log.Println("🚀 TurboGate running at :8080")
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: manager,
 	}
+
+	// Graceful shutdown
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		log.Println("🛑 Shutting down...")
+		server.Close()
+	}()
+
+	log.Fatal(server.ListenAndServe())
 }
