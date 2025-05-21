@@ -1,30 +1,29 @@
 package config
 
 import (
-	"os"
+	"io/ioutil"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Route struct {
-	Path   string `yaml:"path"`
-	Target string `yaml:"target"`
+	Path     string `yaml:"path"`
+	Upstream string `yaml:"upstream"`
 }
 
 type Config struct {
 	Routes []Route `yaml:"routes"`
 }
 
-func LoadConfig(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+func LoadConfig(path string) ([]Route, error) {
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-
 	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
 		return nil, err
 	}
-
-	return &cfg, nil
+	return cfg.Routes, nil
 }
