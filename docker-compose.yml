@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  turbogate:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/app/config  # optional for live reloading config

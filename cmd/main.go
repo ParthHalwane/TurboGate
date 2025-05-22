@@ -6,11 +6,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"TurboGate/config"
-	"TurboGate/internal/observability"
-	"TurboGate/internal/router"
-	"TurboGate/internal/watcher"
+	"turbogate/config"
+	"turbogate/internal/observability"
+	"turbogate/internal/router"
+	"turbogate/internal/watcher"
 )
 
 func main() {

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"TurboGate/config"
-	"TurboGate/pkg/logger"
+	"turbogate/config"
+	"turbogate/pkg/logger"
 )
 
 type tokenBucket struct {
