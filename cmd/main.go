@@ -15,27 +15,34 @@ import (
 
 func main() {
 	cfgPath := "config/config.yaml"
+
+	//   Initialize Prometheus metrics first
+	observability.InitMetrics()
+
+	//   Load config
 	routes, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	rateLimiter := router.NewRateLimiterMiddleware(10, 20)
+	//   Set up rate limiter
+	rateLimiter := router.NewRateLimiterMiddleware(5, 1)
 
-	// Set up initial router
+	//   Set up initial router
 	baseRouter := router.SetupRouter(routes, rateLimiter)
 
-	// Wrap it with metrics
+	//   Wrap router with Prometheus metrics middleware
 	handlerWithMetrics := observability.MetricsMiddleware(baseRouter)
 
-	// Set up metrics endpoint separately
+	//   Create ServeMux with both app routes and /metrics endpoint
 	mux := http.NewServeMux()
 	mux.Handle("/", handlerWithMetrics)
 	mux.Handle("/metrics", observability.MetricsHandler())
 
-	// Graceful hot reload setup
+	//   Create router manager for live reload
 	manager := router.NewRouterManager(mux)
 
+	//   Watch config file for changes
 	go func() {
 		err := watcher.WatchConfig(cfgPath, func() {
 			newRoutes, err := config.LoadConfig(cfgPath)
@@ -43,27 +50,30 @@ func main() {
 				log.Printf("Error reloading config: %v", err)
 				return
 			}
-			log.Println("✅ Reloaded routes")
+			log.Println("  Reloaded routes")
 
 			newRouter := router.SetupRouter(newRoutes, rateLimiter)
 			handlerWithMetrics := observability.MetricsMiddleware(newRouter)
 
-			manager.UpdateHandler(handlerWithMetrics)
+			newMux := http.NewServeMux()
+			newMux.Handle("/", handlerWithMetrics)
+			newMux.Handle("/metrics", observability.MetricsHandler())
+
+			manager.UpdateHandler(newMux)
 		})
 		if err != nil {
 			log.Fatalf("Watcher failed: %v", err)
 		}
 	}()
 
-	observability.InitMetrics()
-
+	//   Start HTTP server
 	log.Println("🚀 TurboGate running at :8080")
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: manager,
 	}
 
-	// Graceful shutdown
+	//   Handle graceful shutdown
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {

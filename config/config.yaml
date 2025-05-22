@@ -3,5 +3,5 @@ routes:
     target: http://localhost:8001
   - path: /auth/
     target: http://localhost:8002
-  - path: /new/
+  - path: /newapi/
     target: http://localhost:8003
