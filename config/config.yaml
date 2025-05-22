@@ -1,7 +1,9 @@
 routes:
-  - path: /api/
-    target: http://localhost:8001
-  - path: /auth/
-    target: http://localhost:8002
-  - path: /newapi/
-    target: http://localhost:8003
+  - path: /vercel-docs
+    target: https://vercel.com/docs
+  - path: /nextjs
+    target: https://nextjs.org/
+  - path: /piston
+    target: https://emkc.org/api/v2/piston
+  - path: /github
+    target: https://github.com
