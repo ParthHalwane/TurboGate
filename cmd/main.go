@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"TurboGate/config"
+	"TurboGate/internal/observability"
 	"TurboGate/internal/router"
 	"TurboGate/internal/watcher"
 )
@@ -19,9 +20,21 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	rateLimiter := router.NewRateLimiterMiddleware(10, 20) // Customize as needed
-	initialRouter := router.SetupRouter(routes, rateLimiter)
-	manager := router.NewRouterManager(initialRouter)
+	rateLimiter := router.NewRateLimiterMiddleware(10, 20)
+
+	// Set up initial router
+	baseRouter := router.SetupRouter(routes, rateLimiter)
+
+	// Wrap it with metrics
+	handlerWithMetrics := observability.MetricsMiddleware(baseRouter)
+
+	// Set up metrics endpoint separately
+	mux := http.NewServeMux()
+	mux.Handle("/", handlerWithMetrics)
+	mux.Handle("/metrics", observability.MetricsHandler())
+
+	// Graceful hot reload setup
+	manager := router.NewRouterManager(mux)
 
 	go func() {
 		err := watcher.WatchConfig(cfgPath, func() {
@@ -32,12 +45,20 @@ func main() {
 			}
 			log.Println("✅ Reloaded routes")
 			newRouter := router.SetupRouter(newRoutes, rateLimiter)
-			manager.UpdateHandler(newRouter)
+			handlerWithMetrics := observability.MetricsMiddleware(newRouter)
+
+			mux := http.NewServeMux()
+			mux.Handle("/", handlerWithMetrics)
+			mux.Handle("/metrics", observability.MetricsHandler())
+
+			manager.UpdateHandler(mux)
 		})
 		if err != nil {
 			log.Fatalf("Watcher failed: %v", err)
 		}
 	}()
+
+	observability.InitMetrics()
 
 	log.Println("🚀 TurboGate running at :8080")
 	server := &http.Server{
