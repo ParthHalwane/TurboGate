@@ -9,33 +9,8 @@ import (
 	"time"
 
 	"TurboGate/config"
-	"TurboGate/internal/limiter"
-	"TurboGate/internal/proxy"
 	"TurboGate/pkg/logger"
 )
-
-func NewRouter(cfg *config.Config, lim *limiter.IPRateLimiter) http.Handler {
-	mux := http.NewServeMux()
-
-	for _, route := range cfg.Routes {
-		target := route.Upstream
-		path := route.Path
-
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			clientIP := r.RemoteAddr
-			if !lim.Allow(clientIP) {
-				http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
-				return
-			}
-
-			// Strip prefix for cleaner forwarding
-			r.URL.Path = strings.TrimPrefix(r.URL.Path, path)
-			proxy.NewReverseProxy(target).ServeHTTP(w, r)
-		})
-	}
-
-	return mux
-}
 
 type tokenBucket struct {
 	tokens         int
@@ -89,21 +64,25 @@ func NewRateLimiterMiddleware(maxTokens int, refillRatePerSec int) func(http.Han
 	}
 }
 
-// SetupRouter takes parsed routes and rate limiter, returns a handler
 func SetupRouter(routes []config.Route, rateLimiter func(http.Handler) http.Handler) http.Handler {
 	mux := http.NewServeMux()
 
 	for _, route := range routes {
-		target, err := url.Parse(route.Upstream)
+		target, err := url.Parse(route.Target)
 		if err != nil {
-			logger.Error("Invalid upstream: " + route.Upstream)
+			logger.Error("Invalid target: " + route.Target)
 			continue
 		}
 
 		proxy := httputil.NewSingleHostReverseProxy(target)
-		handler := rateLimiter(proxy)
 
-		mux.Handle(route.Path, handler)
+		mux.Handle(route.Path, rateLimiter(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Strip the route prefix
+			r.URL.Path = strings.TrimPrefix(r.URL.Path, route.Path)
+			logger.Info("Proxying " + r.URL.Path + " → " + route.Target)
+			proxy.ServeHTTP(w, r)
+		})))
+
 	}
 
 	return mux
