@@ -12,6 +12,7 @@ import (
 	"turbogate/internal/watcher"
 )
 
+// Commented to commit the change for testing if github actions works
 func main() {
 	cfgPath := "config/config.yaml"
 
