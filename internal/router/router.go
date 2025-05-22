@@ -1,13 +1,13 @@
 package router
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
-
 	"turbogate/config"
 	"turbogate/pkg/logger"
 )
@@ -74,7 +74,12 @@ func SetupRouter(routes []config.Route, rateLimiter func(http.Handler) http.Hand
 			continue
 		}
 
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
 		proxy := httputil.NewSingleHostReverseProxy(target)
+		proxy.Transport = transport
 
 		mux.Handle(route.Path, rateLimiter(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Strip the route prefix
