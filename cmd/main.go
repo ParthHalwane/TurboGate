@@ -44,14 +44,11 @@ func main() {
 				return
 			}
 			log.Println("✅ Reloaded routes")
+
 			newRouter := router.SetupRouter(newRoutes, rateLimiter)
 			handlerWithMetrics := observability.MetricsMiddleware(newRouter)
 
-			mux := http.NewServeMux()
-			mux.Handle("/", handlerWithMetrics)
-			mux.Handle("/metrics", observability.MetricsHandler())
-
-			manager.UpdateHandler(mux)
+			manager.UpdateHandler(handlerWithMetrics)
 		})
 		if err != nil {
 			log.Fatalf("Watcher failed: %v", err)

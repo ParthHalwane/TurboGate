@@ -19,22 +19,26 @@ func WatchConfig(path string, onChange func()) error {
 		return err
 	}
 
+	lastChange := time.Now()
+
 	for {
 		select {
 		case event, ok := <-watcher.Events:
 			if !ok {
 				return nil
 			}
-			if event.Op&fsnotify.Write == fsnotify.Write {
-				log.Println("🔄 Config file changed, reloading...")
-				time.Sleep(300 * time.Millisecond) // debounce
-				onChange()
+			if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
+				if time.Since(lastChange) > 1*time.Second {
+					lastChange = time.Now()
+					log.Println("🔁 Detected config change")
+					onChange()
+				}
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return nil
 			}
-			log.Printf("watcher error: %v", err)
+			log.Println("watcher error:", err)
 		}
 	}
 }

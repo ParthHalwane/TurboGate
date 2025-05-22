@@ -6,20 +6,20 @@ import (
 )
 
 type RouterManager struct {
-	current atomic.Value // holds http.Handler
+	handler atomic.Value
 }
 
-func NewRouterManager(handler http.Handler) *RouterManager {
-	rm := &RouterManager{}
-	rm.current.Store(handler)
-	return rm
+func NewRouterManager(initial http.Handler) *RouterManager {
+	m := &RouterManager{}
+	m.handler.Store(initial)
+	return m
 }
 
-func (rm *RouterManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := rm.current.Load().(http.Handler)
+func (m *RouterManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	handler := m.handler.Load().(http.Handler)
 	handler.ServeHTTP(w, r)
 }
 
-func (rm *RouterManager) UpdateHandler(newHandler http.Handler) {
-	rm.current.Store(newHandler)
+func (m *RouterManager) UpdateHandler(newHandler http.Handler) {
+	m.handler.Store(newHandler)
 }
