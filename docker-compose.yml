@@ -3,6 +3,6 @@ services:
   turbogate:
     build: .
     ports:
-      - "8080:8080"
+      - "10000:10000"
     volumes:
       - ./config:/app/config  # optional for live reloading config

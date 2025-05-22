@@ -20,6 +20,6 @@ COPY --from=builder /app/turbogate .
 
 COPY --from=builder /app/config ./config
 
-EXPOSE 8080
+EXPOSE 10000
 
 CMD ["./turbogate"]

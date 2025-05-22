@@ -67,9 +67,9 @@ func main() {
 	}()
 
 	//   Start HTTP server
-	log.Println("🚀 TurboGate running at :8080")
+	log.Println("🚀 TurboGate running at : 10000")
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":10000",
 		Handler: manager,
 	}
 
