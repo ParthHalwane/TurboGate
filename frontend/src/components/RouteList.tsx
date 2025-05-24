@@ -19,12 +19,12 @@ function RouteList({ routes }: Props) {
       <ul className="list-disc list-inside space-y-2">
         {routes.map((r, idx) => (
           <li key={idx}>
-            <span className="font-mono text-blue-400">{r.path}</span> →
+            <span className="font-mono text-pink-400">{r.path}</span> →
             <a
               href={r.target}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-200 underline hover:text-blue-100 ml-1"
+              className="text-pink-200 underline hover:text-pink-100 ml-1"
             >
               {r.target}
             </a>

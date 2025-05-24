@@ -1,3 +1,5 @@
 routes:
     - path: /github
       target: https://github.com
+    - path: /lpplpp
+      target: https://okok

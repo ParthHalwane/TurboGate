@@ -35,30 +35,30 @@ function RouteForm({ onRouteAdded }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 mb-6">
       <div>
-        <label className="block font-medium">Route Path</label>
+        <label className="block font-medium text-pink-400">Route Path</label>
         <input
           type="text"
           value={route}
           onChange={(e) => setRoute(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md"
+          className="w-full px-4 py-2 border border-pink-200 rounded-md"
           placeholder="/new"
           required
         />
       </div>
       <div>
-        <label className="block font-medium">Domain URL</label>
+        <label className="block font-medium text-pink-400">Domain URL</label>
         <input
           type="url"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md"
+          className="w-full px-4 py-2 border border-pink-200 rounded-md"
           placeholder="https://example.com"
           required
         />
       </div>
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+        className="w-full bg-pink-500 text-white py-2 rounded-md hover:bg-pink-600"
       >
         ➕ Add Route
       </button>

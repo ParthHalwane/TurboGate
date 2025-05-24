@@ -28,9 +28,9 @@ function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
-        <div className="bg-slate-800 bg-opacity-60 backdrop-blur-md rounded-2xl shadow-xl shadow-blue-500/20 p-8 w-full max-w-2xl mx-auto border border-blue-500/30">
-          <h1 className="text-3xl font-extrabold mb-6 text-center text-blue-400">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-900 text-white p-8">
+        <div className="bg-slate-80 bg-opacity-60 backdrop-blur-md rounded-2xl shadow-xl shadow-pink-500/40 p-8 w-full max-w-2xl mx-auto border border-pink-600/10">
+          <h1 className="text-3xl font-extrabold mb-6 text-center text-pink-500">
             TurboGate
           </h1>
 
