@@ -3,6 +3,7 @@ package observability
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -33,6 +34,14 @@ var (
 			Help: "Current number of in-flight requests",
 		},
 	)
+
+	requestFailures = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "turbogate_http_request_failures_total",
+			Help: "Total failed HTTP requests",
+		},
+		[]string{"path", "method", "status"},
+	)
 )
 
 func InitMetrics() {
@@ -48,10 +57,15 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		rw := &responseWriter{w, http.StatusOK}
 
 		next.ServeHTTP(rw, r)
-
+		path := getPathGroup(r.URL.Path)
 		duration := time.Since(start).Seconds()
-		requestCount.WithLabelValues(r.URL.Path, r.Method, strconv.Itoa(rw.status)).Inc()
-		requestDuration.WithLabelValues(r.URL.Path).Observe(duration)
+
+		if rw.status >= 500 {
+			requestFailures.WithLabelValues(path, r.Method, strconv.Itoa(rw.status)).Inc()
+		}
+
+		requestCount.WithLabelValues(path, r.Method, strconv.Itoa(rw.status)).Inc()
+		requestDuration.WithLabelValues(path).Observe(duration)
 	})
 }
 
@@ -69,4 +83,12 @@ func (rw *responseWriter) WriteHeader(code int) {
 // Expose Prometheus metrics endpoint
 func MetricsHandler() http.Handler {
 	return promhttp.Handler()
+}
+
+func getPathGroup(path string) string {
+	segments := strings.Split(path, "/")
+	if len(segments) > 2 {
+		segments[2] = ":id"
+	}
+	return strings.Join(segments, "/")
 }
