@@ -188,7 +188,7 @@ https://pokeapi.co
 ---
 
 ## 📝 License
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](https://github.com/ParthHalwane/TurboGate/blob/main/LICENSE).
 Feel free to use, modify, or extend it with proper attribution.
 
 ---
