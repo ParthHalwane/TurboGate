@@ -17,6 +17,7 @@ import (
 )
 
 func main() {
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	// Initialize Prometheus metrics first
 	observability.InitMetrics()
@@ -39,12 +40,10 @@ func main() {
 
 	// Create ServeMux with both app routes and /metrics endpoint
 	mux := http.NewServeMux()
-	wwr := 1
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			w.Header().Set("Content-Type", "application/json")
-			log.Println("Backend running", wwr)
-			wwr += 1
 			json.NewEncoder(w).Encode(map[string]string{"status": "TurboGate backend running 🚀"})
 			return
 		}

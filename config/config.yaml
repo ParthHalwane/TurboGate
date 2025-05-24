@@ -1,5 +1,5 @@
 routes:
     - path: /github
       target: https://github.com
-    - path: /lpplpp
-      target: https://okok
+    - path: /duck
+      target: https://duckduckgo.com
