@@ -1,13 +1,3 @@
 routes:
-  - path: /yt
-    target: https://www.youtube.com
-  - path: /nextjs
-    target: https://nextjs.org/
-  - path: /piston
-    target: https://emkc.org/api/v2/piston
-  - path: /github
-    target: https://github.com
-  - path: /wiki
-    target: https://en.wikipedia.org
-  - path: /codeverse
-    target: https://codeverse-0.netlify.app/
+    - path: /github
+      target: https://github.com
