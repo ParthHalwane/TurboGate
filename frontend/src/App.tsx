@@ -9,7 +9,9 @@ function App() {
 
   const fetchRoutes = async () => {
     try {
-      const res = await fetch("http://localhost:10000/api/routes");
+      const res = await fetch(
+        `${import.meta.env.VITE_TURBOGATE_BACKEND_URL}/api/routes`
+      );
       const data = await res.json();
       console.log("Fetched route list:", data);
       setRoutes(data);

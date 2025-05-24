@@ -18,7 +18,7 @@ function RouteForm({ onRouteAdded }: Props) {
     });
 
     const res = await fetch(
-      `http://localhost:10000/api/add-route?${query.toString()}`
+      `${import.meta.env.VITE_TURBOGATE_BACKEND_URL}/api/add-route?${query.toString()}`
     );
 
     if (res.ok) {
